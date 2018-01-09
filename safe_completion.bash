@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # bash completion for safe
 
 #Envvars:
@@ -28,7 +30,7 @@ __safecomp() {
   COMP_WORDBREAKS="${COMP_WORDBREAKS//:}"
   for s in $1; do
     local prefixed="${_SAFECOMP_PREFIX}$s"
-    if egrep "^$cur.*" <<<"$prefixed" >/dev/null; then
+    if grep -E "^$cur.*" <<<"$prefixed" >/dev/null; then
       local space=" "
       if [[ -n $_SAFECOMP_NOSPACE ]]; then
         space=""
@@ -63,7 +65,8 @@ __safe_complete_path() {
     return 0
   fi
 
-  local dir="$(dirname $full_path)"
+  local dir
+  dir="$(dirname "$full_path")"
   if [[ $dir == "." && $full_path != "secret/" ]]; then
     _SAFECOMP_NOSPACE=1 __safecomp "secret/"
     return 0
@@ -72,7 +75,7 @@ __safe_complete_path() {
   local should_nospace=0
 
   if [[ -n $_SAFECOMP_SUBKEY ]]; then
-    if egrep ':' <<<$full_path >/dev/null; then
+    if grep -E ':' <<<"$full_path" >/dev/null; then
       local secret="${full_path/:*}"
       __safe_debug "...calling safe_complete_key from found-colon path"
       __safe_complete_key "$secret"
@@ -82,11 +85,13 @@ __safe_complete_path() {
     should_nospace=1
   fi
 
-  local base="$(basename $full_path)"
+  #We'll want this if we split completion on slashes
+  #local base
+  #base="$(basename $full_path)"
 
   if [[ ${full_path:$((${#full_path} - 1)):1} == "/" ]]; then
     dir=${full_path:0:$((${#full_path} - 1))}
-    base=""
+    #base=""
   fi
   dir="${dir}/"
 
@@ -100,7 +105,7 @@ __safe_complete_path() {
       __safecomp "$(safe ls "$dir" 2>/dev/null)"
   fi
 
-  if [[ -n $_SAFECOMP_SUBKEY && ${#COMPREPLY[@]} -eq 1 && $COMPREPLY == $full_path ]]; then
+  if [[ -n $_SAFECOMP_SUBKEY && ${#COMPREPLY[@]} -eq 1 && ${COMPREPLY[0]} == "$full_path" ]]; then
     __safe_complete_key "$full_path"
   fi
 }
@@ -175,9 +180,10 @@ _safe_target() {
   IFS=$'\n'
   for line in $target_output; do
     __safe_debug "line: $line"
-    local target=$(awk '{print $1}' <<<$line )
+    local target
+    target=$(awk '{print $1}' <<<"$line" )
     if [[ $target == "(*)" ]]; then
-      target=$(awk '{print $2}' <<<$line )
+      target=$(awk '{print $2}' <<<"$line" )
     fi
 
     __safe_debug "target: $target"
