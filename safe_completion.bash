@@ -117,7 +117,7 @@ __safe_complete_path() {
 __safe_complete_key() {
   __safe_debug "Completing key"
   __safe_debug "Checking for keys under secret: $1"
-  __safecomp "$(safe paths --keys "$1" | xargs -n 1 basename)"
+  __safecomp "$(safe paths --keys "$1" 2>/dev/null | xargs -n 1 basename)"
 }
 
 # _SAFECOMP_NOHELP: if nonempty, help is omitted from the selection
