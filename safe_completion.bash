@@ -10,7 +10,7 @@ __safecomp() {
   __safe_debug "Entering __safecomp"
 
   local cur=${2:-${COMP_WORDS[COMP_CWORD]}}
-  #COMP_WORDBREAKS="${COMP_WORDBREAKS//:}"
+  COMP_WORDBREAKS="${COMP_WORDBREAKS//:}"
   COMP_WORDBREAKS="${COMP_WORDBREAKS//\/}/"
   __safe_debug "word break on: ${COMP_WORDBREAKS}"
   if [[ -z $cur || "${cur: -1}" == "/" ]]; then
