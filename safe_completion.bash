@@ -10,6 +10,7 @@ __safecomp() {
   __safe_debug "Entering __safecomp"
 
   local cur=${2:-${COMP_WORDS[COMP_CWORD]}}
+  tmp_wordbreaks="${COMP_WORDBREAKS}"
   COMP_WORDBREAKS="${COMP_WORDBREAKS//:}"
   COMP_WORDBREAKS="${COMP_WORDBREAKS//\/}/"
   __safe_debug "word break on: ${COMP_WORDBREAKS}"
@@ -60,6 +61,8 @@ __safecomp() {
     done
     __safe_debug "---END---"
   fi
+
+  COMP_WORDBREAKS="${tmp_wordbreaks}"
 }
 
 #Envvars
