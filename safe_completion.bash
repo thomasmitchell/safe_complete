@@ -3,26 +3,14 @@
 # bash completion for safe
 
 #Envvars:
+#  _SAFECOMP_PREFIX: Prepends this prefix to each in completion list
 #  _SAFECOMP_NOSPACE: Doesn't append space to completion. Overrides _SAFECOMP_NOSPACE_SLASH
 #  _SAFECOMP_NOSPACE_SLASH: Doesn't append space to completion ending with slash
 __safecomp() {
   __safe_debug "Entering __safecomp"
 
-  local cur=${2:-${COMP_WORDS[COMP_CWORD]}}
-  #COMP_WORDBREAKS="${COMP_WORDBREAKS//:}"
-  COMP_WORDBREAKS="${COMP_WORDBREAKS//\/}/"
-  __safe_debug "word break on: ${COMP_WORDBREAKS}"
-  if [[ -z $cur || "${cur: -1}" == "/" ]]; then
-    cur=""
-  else
-    IFS="${COMP_WORDBREAKS}" read -a parts <<<$cur
-    __safe_debug "parts is ${parts[@]}"
-    cur=${parts[${#parts[@]}-1]}
-  fi
-
-  __safe_debug "cur is: '$cur'"
-
   local s IFS=$' '$'\t'$'\n'
+  local cur=${2:-${COMP_WORDS[COMP_CWORD]}}
 
   if [[ -n $_SAFECOMP_NOSPACE ]]; then
     __safe_debug "_SAFECOMP_NOSPACE is set"
@@ -32,22 +20,28 @@ __safecomp() {
     __safe_debug "_SAFECOMP_NOSPACE_SLASH is set"
   fi
 
+  if [[ -n $_SAFECOMP_PREFIX ]]; then
+    __safe_debug "_SAFECOMP_PREFIX is \"${_SAFECOMP_PREFIX}\""
+  fi
+
   #Old bash installations (like the system bash on mac) have
   # terrible completion utilities. Let's hack our own `compgen'
   COMPREPLY=()
+  COMP_WORDBREAKS="${COMP_WORDBREAKS//:}"
   for s in $1; do
-    if grep -E "^$cur.*" <<<"$s" >/dev/null; then
+    local prefixed="${_SAFECOMP_PREFIX}$s"
+    if grep -E "^$cur.*" <<<"$prefixed" >/dev/null; then
       local space=" "
       if [[ -n $_SAFECOMP_NOSPACE ]]; then
         space=""
       elif [[ -n $_SAFECOMP_NOSPACE_SLASH && \
-            ${s:${#s}-1:1} == "/" ]]; then
+            ${prefixed:${#prefixed}-1:1} == "/" ]]; then
         space=""
       fi
 
-      COMPREPLY+=("$s$space")
+      COMPREPLY+=("$prefixed$space")
     else
-      __safe_debug "Discarding: '$s'"
+      __safe_debug "Discarding: '$prefixed'"
     fi
   done
 
@@ -103,13 +97,15 @@ __safe_complete_path() {
 
   if [[ $should_nospace == 1 ]]; then
     _SAFECOMP_NOSPACE=1 \
+    _SAFECOMP_PREFIX="$dir" \
       __safecomp "$(safe ls "$dir" 2>/dev/null)"
   else
     _SAFECOMP_NOSPACE_SLASH=1 \
+    _SAFECOMP_PREFIX="$dir" \
       __safecomp "$(safe ls "$dir" 2>/dev/null)"
   fi
 
-  if [[ -n $_SAFECOMP_SUBKEY && ${#COMPREPLY[@]} -eq 1 && "${dir}${COMPREPLY[0]}" == "$full_path" ]]; then
+  if [[ -n $_SAFECOMP_SUBKEY && ${#COMPREPLY[@]} -eq 1 && ${COMPREPLY[0]} == "$full_path" ]]; then
     __safe_complete_key "$full_path"
   fi
 }
@@ -117,7 +113,7 @@ __safe_complete_path() {
 __safe_complete_key() {
   __safe_debug "Completing key"
   __safe_debug "Checking for keys under secret: $1"
-  __safecomp "$(safe paths --keys "$1" | xargs -n 1 basename)"
+  __safecomp "$(safe paths --keys "$1")"
 }
 
 # _SAFECOMP_NOHELP: if nonempty, help is omitted from the selection
