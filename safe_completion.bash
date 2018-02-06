@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 # bash completion for safe
 
 #Envvars:
@@ -15,8 +16,8 @@ __safecomp() {
   if [[ -z $cur || "${cur: -1}" == "/" ]]; then
     cur=""
   else
-    IFS="${COMP_WORDBREAKS}" read -a parts <<<$cur
-    __safe_debug "parts is ${parts[@]}"
+    IFS="${COMP_WORDBREAKS}" read -ra parts <<<$cur
+    __safe_debug "parts is ${parts[*]}"
     cur=${parts[${#parts[@]}-1]}
   fi
 
@@ -101,12 +102,13 @@ __safe_complete_path() {
   fi
   dir="${dir}/"
 
+  __safe_debug "time to safe ls"
   if [[ $should_nospace == 1 ]]; then
     _SAFECOMP_NOSPACE=1 \
-      __safecomp "$(safe ls "$dir" 2>/dev/null)"
+      __safecomp "$(timeout --foreground $SAFECOMP_TIMEOUT safe ls "$dir" 2>/dev/null)"
   else
     _SAFECOMP_NOSPACE_SLASH=1 \
-      __safecomp "$(safe ls "$dir" 2>/dev/null)"
+      __safecomp "$(timeout --foreground $SAFECOMP_TIMEOUT safe ls "$dir" 2>/dev/null)"
   fi
 
   if [[ -n $_SAFECOMP_SUBKEY && ${#COMPREPLY[@]} -eq 1 && "${dir}${COMPREPLY[0]}" == "$full_path" ]]; then
@@ -117,7 +119,7 @@ __safe_complete_path() {
 __safe_complete_key() {
   __safe_debug "Completing key"
   __safe_debug "Checking for keys under secret: $1"
-  __safecomp "$(safe paths --keys "$1" 2>/dev/null | xargs -n 1 basename)"
+  __safecomp "$(timeout --foreground $SAFECOMP_TIMEOUT safe paths --keys "$1" 2>/dev/null | xargs -n 1 basename)"
 }
 
 # _SAFECOMP_NOHELP: if nonempty, help is omitted from the selection
@@ -206,6 +208,7 @@ __safe_debug() {
 
 _safe() {
   __safe_debug "Beginning completion"
+  SAFECOMP_TIMEOUT=${SAFECOMP_TIMEOUT:-2}
 
   _safe_current_token=1
   local cmd
