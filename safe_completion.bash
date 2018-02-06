@@ -202,6 +202,7 @@ __safe_debug() {
 
 _safe() {
   __safe_debug "Beginning completion"
+  SAFECOMP_TIMEOUT=${SAFECOMP_TIMEOUT:-2}
 
   _safe_current_token=1
   local cmd
