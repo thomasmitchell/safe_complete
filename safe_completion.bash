@@ -67,7 +67,6 @@ __safecomp() {
 __safe_complete_path() {
   __safe_debug "Completing path"
   local full_path="${COMP_WORDS[$COMP_CWORD]}"
-  __safe_debug "Full path is '$full_path'"
   if [[ -z $full_path ]]; then
     _SAFECOMP_NOSPACE=1 __safecomp "secret/"
     return 0
@@ -210,27 +209,6 @@ __safe_debug() {
 _safe() {
   __safe_debug "Beginning completion"
   SAFECOMP_TIMEOUT=${SAFECOMP_TIMEOUT:-2}
-
-  # bash v4 does splitting on COMP_WORDBREAKS, which I don't want
-  if [[ ${BASH_VERSINFO[0]} == 4 ]]; then
-    __safe_debug "Using bash version 4"
-    IFS=' ' COMP_WORDS=( $COMP_LINE )
-    COMP_CWORD=$((${#COMP_WORDS[@]} - 1))
-    if [[ "${COMP_LINE: -1}" == " " ]]; then
-      COMP_CWORD=$((COMP_CWORD + 1))
-    fi
-  fi
-
-  __safe_debug "COMP_WORDS is:"
-  if [[ -n $_SAFECOMP_DEBUG ]]; then
-    __safe_debug "---BEGIN---"
-    for word in ${COMP_WORDS[@]}; do
-      __safe_debug $word
-    done
-    __safe_debug "---END---"
-  fi
-  __safe_debug "COMP_CWORD is: ${COMP_CWORD}"
-  __safe_debug "Current word is ${COMP_WORDS[$COMP_CWORD]}"
 
   _safe_current_token=1
   local cmd
