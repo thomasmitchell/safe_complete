@@ -98,11 +98,11 @@ __safe_complete_path() {
   if [[ $should_nospace == 1 ]]; then
     _SAFECOMP_NOSPACE=1 \
     _SAFECOMP_PREFIX="$dir" \
-      __safecomp "$(timeout --foreground $SAFECOMP_TIMEOUT safe ls "$dir" 2>/dev/null)"
+      __safecomp "$($_SAFECOMP_TIMEOUT_CMD safe ls "$dir" 2>/dev/null)"
   else
     _SAFECOMP_NOSPACE_SLASH=1 \
     _SAFECOMP_PREFIX="$dir" \
-      __safecomp "$(timeout --foreground $SAFECOMP_TIMEOUT safe ls "$dir" 2>/dev/null)"
+      __safecomp "$($_SAFECOMP_TIMEOUT_CMD safe ls "$dir" 2>/dev/null)"
   fi
 
   if [[ -n $_SAFECOMP_SUBKEY && ${#COMPREPLY[@]} -eq 1 && ${COMPREPLY[0]} == "$full_path" ]]; then
@@ -113,7 +113,7 @@ __safe_complete_path() {
 __safe_complete_key() {
   __safe_debug "Completing key"
   __safe_debug "Checking for keys under secret: $1"
-  __safecomp "$(timeout --foreground $SAFECOMP_TIMEOUT safe paths --keys "$1" 2>/dev/null)"
+  __safecomp "$($_SAFECOMP_TIMEOUT_CMD safe paths --keys "$1" 2>/dev/null)"
 }
 
 # _SAFECOMP_NOHELP: if nonempty, help is omitted from the selection
@@ -173,7 +173,7 @@ _safe_x509() {
 }
 
 _safe_target() {
-  target_output=$(timeout --foreground $SAFECOMP_TIMEOUT safe targets 2>&1 | tail -n +3)
+  target_output=$($_SAFECOMP_TIMEOUT_CMD safe targets 2>&1 | tail -n +3)
   __safe_debug "target_output: $target_output"
 
   local targets=()
@@ -202,7 +202,11 @@ __safe_debug() {
 
 _safe() {
   __safe_debug "Beginning completion"
-  SAFECOMP_TIMEOUT=${SAFECOMP_TIMEOUT:-2}
+  SAFECOMP_TIMEOUT=${SAFECOMP_TIMEOUT:-0}
+  set _SAFECOMP_TIMEOUT_CMD
+  if [[ SAFECOMP_TIMEOUT -gt 0 ]]; then
+    _SAFECOMP_TIMEOUT_CMD="timeout --foreground $SAFECOMP_TIMEOUT"
+  fi
 
   _safe_current_token=1
   local cmd
