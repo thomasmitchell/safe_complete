@@ -61,14 +61,19 @@ __safe_complete_path() {
   __safe_debug "Completing path"
   local full_path="${COMP_WORDS[$COMP_CWORD]}"
   if [[ -z $full_path ]]; then
-    _SAFECOMP_NOSPACE=1 __safecomp "secret/"
+    _SAFECOMP_NOSPACE=1 __safecomp "$($_SAFECOMP_TIMEOUT_CMD safe ls 2>/dev/null)"
     return 0
   fi
 
   local dir
   dir="$(dirname "$full_path")"
-  if [[ $dir == "." && $full_path != "secret/" ]]; then
-    _SAFECOMP_NOSPACE=1 __safecomp "secret/"
+  if [[ ${full_path:$((${#full_path} - 1)):1} == "/" ]]; then
+    dir=${full_path:0:$((${#full_path} - 1))}
+    #base=""
+  fi
+
+  if [[ $dir == "." && $full_path ]]; then
+    _SAFECOMP_NOSPACE=1 __safecomp "$($_SAFECOMP_TIMEOUT_CMD safe ls 2>/dev/null)"
     return 0
   fi
 
