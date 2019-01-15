@@ -9,9 +9,10 @@
 __safecomp() {
   __safe_debug "Entering __safecomp"
 
-  local s IFS=$' '$'\t'$'\n'
+  TMP_IFS="$IFS"
+  IFS=$' '$'\t'$'\n'
+  local s 
   local cur=${2:-${COMP_WORDS[COMP_CWORD]}}
-
   if [[ -n $_SAFECOMP_NOSPACE ]]; then
     __safe_debug "_SAFECOMP_NOSPACE is set"
   fi
@@ -44,6 +45,8 @@ __safecomp() {
       __safe_debug "Discarding: '$prefixed'"
     fi
   done
+
+  IFS="$TMP_IFS"
 
   if [[ -n $_SAFECOMP_DEBUG ]]; then
     __safe_debug "Completion options:"
@@ -182,7 +185,8 @@ _safe_target() {
   __safe_debug "target_output: $target_output"
 
   local targets=()
-  IFS=$'\n'
+  TMP_IFS="$IFS"
+  IFS=$'\n' 
   for line in $target_output; do
     __safe_debug "line: $line"
     local target
@@ -195,6 +199,7 @@ _safe_target() {
 
     targets+=("$target")
   done
+  IFS="$TMP_IFS"
 
   __safecomp "${targets[*]}"
 }
