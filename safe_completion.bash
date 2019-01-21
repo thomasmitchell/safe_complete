@@ -165,7 +165,7 @@ _safe_x509() {
     local s="${COMP_WORDS[_safe_current_token]}"
     _safe_current_token="$((++_safe_current_token))"
     case "$s" in
-      issue|revoke|validate|show|crl)
+      issue|revoke|validate|show|crl|renew|reissue)
         cmd=$s
         break
         ;;
@@ -173,7 +173,7 @@ _safe_x509() {
   done
 
   if [[ -z $cmd ]]; then
-    __safecomp "issue revoke validate show crl"
+    __safecomp "issue revoke validate show crl renew reissue"
     return 0
   fi
 
