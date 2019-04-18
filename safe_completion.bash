@@ -239,7 +239,7 @@ _safe() {
   fi
 
   case "$cmd" in
-    ask|set|write|paste|list|ls|tree|paths|export|rsa|ssh) __safe_complete_path ;;
+    ask|set|write|paste|list|ls|tree|paths|export|rsa|ssh|versions|undelete) __safe_complete_path ;;
     get|read|cat|rm|move|rename|mv|cp|copy|gen|auto|exists) _SAFECOMP_SUBKEY=1 __safe_complete_path ;;
     x509)                _safe_x509 ;;
     auth|login)          _safe_auth ;;
