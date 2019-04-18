@@ -136,7 +136,7 @@ _safe_commands() {
 ${help} version targets status unseal seal env auth login renew ask set write
 paste exists check init rekey get read cat ls paths tree target delete rm
 export import move rename mv copy cp gen auto ssh rsa dhparam dhparams dh
-prompt vault fmt curl x509"
+prompt vault fmt curl x509 versions undelete revert"
 }
 
 _safe_auth() {
@@ -239,7 +239,7 @@ _safe() {
   fi
 
   case "$cmd" in
-    ask|set|write|paste|list|ls|tree|paths|export|rsa|ssh|versions|undelete) __safe_complete_path ;;
+    ask|set|write|paste|list|ls|tree|paths|export|rsa|ssh|versions|undelete|revert) __safe_complete_path ;;
     get|read|cat|rm|move|rename|mv|cp|copy|gen|auto|exists) _SAFECOMP_SUBKEY=1 __safe_complete_path ;;
     x509)                _safe_x509 ;;
     auth|login)          _safe_auth ;;
